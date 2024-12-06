@@ -1,0 +1,47 @@
+---
+name: exomast
+"@id": "#exomast"
+description: "Prototype ExoMAST Database"
+
+tables:
+  - name: Sources
+    "@id": "#Sources"
+    description: Main table for ExoMAST objects (planets, brown dwarfs)
+    primaryKey: 
+    - "#Sources.id"
+
+    columns:
+    - name: id
+      "@id": "#Sources.id"
+      datatype: int
+      description: Main source identifier
+      ivoa:ucd: meta.id;meta.main
+    - name: type
+      "@id": "#Sources.type"
+      datatype: string
+      length: 30
+      description: Type of source (eg, exoplanet, brown dwarf, etc)
+    - name: survey
+      "@id": "#Sources.survey"
+      datatype: string
+      length: 30
+      description: Originating survey (eg, nexsci, TOI, etc)
+  
+  - name: Matches
+    "@id": "#Matches"
+    description: Matching table between exomast sources
+    primaryKey: 
+    - "#Matches.id1"
+    - "#Matches.id2"
+
+    columns:
+    - name: id1
+      "@id": "#Matches.id1"
+      datatype: int
+      description: Source identifier
+      ivoa:ucd: meta.id
+    - name: id2
+      "@id": "#Matches.id2"
+      datatype: int
+      description: Source identifier
+      ivoa:ucd: meta.id

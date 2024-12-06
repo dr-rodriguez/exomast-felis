@@ -15,14 +15,14 @@ from felis.metadata import MetaDataBuilder
 from astrodbkit.astrodb import Database
 
 
-# CONNECTION_STRING = "postgresql+psycopg2://postgres:password@localhost:5432/exomast"
-CONNECTION_STRING = "sqlite:///exomast.sqlite"
+CONNECTION_STRING = "postgresql+psycopg2://postgres:password@localhost:5432/exomast"
+# CONNECTION_STRING = "sqlite:///exomast.sqlite"
 REFERENCE_TABLES = [
     "Publications",
     "Surveys",
 ]
 
-# Check if DB exists
+# Check if DB/tables exists
 engine = create_engine(CONNECTION_STRING)
 with Session(engine) as session:
     result = session.execute(sa.text("select * from Sources")).fetchall()

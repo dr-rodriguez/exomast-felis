@@ -26,6 +26,13 @@ tables:
       datatype: string
       length: 30
       description: Originating survey (eg, nexsci, TOI, etc)
+
+    indexes:
+      - name: PK_Sources_id
+        "@id": "#PK_Sources_id"
+        description: Primary key for Sources table
+        columns: 
+        - "#Sources.id"
   
   - name: Matches
     "@id": "#Matches"
@@ -45,3 +52,70 @@ tables:
       datatype: int
       description: Source identifier
       ivoa:ucd: meta.id
+
+  - name: Names
+    "@id": "#Names"
+    description: "Additional identifiers for objects in Sources table"
+    primaryKey:
+    - "#Names.id"
+    - "#Names.name"
+
+    columns:
+    - name: id
+      "@id": "#Names.id"
+      datatype: int
+      description: Main identfier for an object; links to Sources table
+      nullable: false
+    - name: name
+      "@id": "#Names.name"
+      datatype: string
+      length: 100
+      description: Identifier for source
+      nullable: false
+
+    constraints:
+      - name: Names_id_Sources_id
+        "@type": "ForeignKey"
+        "@id": "#FK_Names_id_Source_id"
+        description: Link Names to Sources table
+        columns:
+        - "#Names.id"
+        referencedColumns:
+        - "#Sources.id"
+
+  - name: Coords
+    "@id": "#Coords"
+    description: Coordinates for ExoMAST objects (planets, brown dwarfs)
+    primaryKey: 
+    - "#Coords.id"
+
+    columns:
+    - name: id
+      "@id": "#Coords.id"
+      datatype: int
+      description: Main source identifier
+      ivoa:ucd: meta.id;meta.main
+    - name: ra
+      "@id": "#Coords.ra"
+      datatype: double
+      description: ICRS Right Ascension of object
+      fits:tunit: deg
+      ivoa:ucd: pos.eq.ra;meta.main
+    - name: dec
+      "@id": "#Coords.dec"
+      datatype: double
+      description: ICRS Declination of object
+      fits:tunit: deg
+      ivoa:ucd: pos.eq.dec;meta.main
+
+    constraints:
+      - name: check_ra
+        "@type": Check
+        "@id": "#Sources_check_ra_bounds"
+        description: Validate RA range
+        expression: ra >= 0 AND ra <= 360
+      - name: check_dec
+        "@type": Check
+        "@id": "#Sources_check_dec_bounds"
+        description: Validate Dec range
+        expression: dec >= -90 AND dec <= 90

@@ -21,11 +21,13 @@ tables:
       datatype: string
       length: 30
       description: Type of source (eg, exoplanet, brown dwarf, etc)
+      nullable: false
     - name: survey
       "@id": "#Sources.survey"
       datatype: string
       length: 30
       description: Originating survey (eg, nexsci, TOI, etc)
+      nullable: false
 
     indexes:
       - name: PK_Sources_id
@@ -52,6 +54,24 @@ tables:
       datatype: int
       description: Source identifier
       ivoa:ucd: meta.id
+    
+    constraints:
+      - name: Matches_id1_Sources_id
+        "@type": "ForeignKey"
+        "@id": "#FK_Matches_id1_Source_id"
+        description: Link Matches to Sources table
+        columns:
+        - "#Matches.id1"
+        referencedColumns:
+        - "#Sources.id"
+      - name: Matches_id2_Sources_id
+        "@type": "ForeignKey"
+        "@id": "#FK_Matches_id2_Source_id"
+        description: Link Matches to Sources table
+        columns:
+        - "#Matches.id2"
+        referencedColumns:
+        - "#Sources.id"
 
   - name: Names
     "@id": "#Names"
@@ -109,6 +129,14 @@ tables:
       ivoa:ucd: pos.eq.dec;meta.main
 
     constraints:
+      - name: Coords_id_Sources_id
+        "@type": "ForeignKey"
+        "@id": "#FK_Coords_id_Source_id"
+        description: Link Coords to Sources table
+        columns:
+        - "#Coords.id"
+        referencedColumns:
+        - "#Sources.id"
       - name: check_ra
         "@type": Check
         "@id": "#Sources_check_ra_bounds"

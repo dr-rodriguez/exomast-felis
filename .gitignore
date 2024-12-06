@@ -1,0 +1,60 @@
+# Compiled files
+*.py[cod]
+*.a
+*.o
+*.so
+__pycache__
+
+# Other generated files
+*/version.py
+*/cython_version.py
+htmlcov
+.coverage
+MANIFEST
+.ipynb_checkpoints
+
+# Packages/installer info
+*.egg
+*.egg-info
+dist
+build
+eggs
+.eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+distribute-*.tar.gz
+
+# Other
+.vs
+.vscode
+.cache
+.tox
+.*.sw[op]
+*~
+.project
+.pydevproject
+.settings
+pip-wheel-metadata/
+.env
+env
+.conda
+*.db
+*.prof
+*.pyc
+__pycache__/
+*.egg-info/
+*.vscode
+*.idea
+*.pytest_cache
+*.devcontainer
+*.ruff_cache
+output/*
+
+# Mac OSX
+.DS_Store
+*.DS_store
+

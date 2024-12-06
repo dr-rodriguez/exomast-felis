@@ -1,3 +1,4 @@
 astrodbkit
 lsst-felis
 pytest
+psycopg2

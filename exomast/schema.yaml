@@ -13,7 +13,7 @@ tables:
     columns:
     - name: id
       "@id": "#Sources.id"
-      datatype: int
+      datatype: long
       description: Main source identifier
       ivoa:ucd: meta.id;meta.main
     - name: type
@@ -46,12 +46,12 @@ tables:
     columns:
     - name: id1
       "@id": "#Matches.id1"
-      datatype: int
+      datatype: long
       description: Source identifier
       ivoa:ucd: meta.id
     - name: id2
       "@id": "#Matches.id2"
-      datatype: int
+      datatype: long
       description: Source identifier
       ivoa:ucd: meta.id
     
@@ -83,7 +83,7 @@ tables:
     columns:
     - name: id
       "@id": "#Names.id"
-      datatype: int
+      datatype: long
       description: Main identfier for an object; links to Sources table
       nullable: false
     - name: name
@@ -112,7 +112,7 @@ tables:
     columns:
     - name: id
       "@id": "#Coords.id"
-      datatype: int
+      datatype: long
       description: Main source identifier
       ivoa:ucd: meta.id;meta.main
     - name: ra

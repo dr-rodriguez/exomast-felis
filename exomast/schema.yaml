@@ -147,3 +147,36 @@ tables:
         "@id": "#Sources_check_dec_bounds"
         description: Validate Dec range
         expression: dec >= -90 AND dec <= 90
+
+  - name: Properties
+    "@id": "#Properties"
+    description: Properties for ExoMAST objects (planets, brown dwarfs)
+    primaryKey: 
+    - "#Properties.id"
+    - "#Properties.property"
+
+    columns:
+    - name: id
+      "@id": "#Properties.id"
+      datatype: long
+      description: Main source identifier
+      ivoa:ucd: meta.id;meta.main
+    - name: property
+      "@id": "#Properties.property"
+      datatype: string
+      length: 30
+      description: Name of the property
+    - name: value
+      "@id": "#Properties.value"
+      datatype: double
+      description: Value of the property
+
+    constraints:
+      - name: Properties_id_Sources_id
+        "@type": "ForeignKey"
+        "@id": "#FK_Properties_id_Source_id"
+        description: Link Properties to Sources table
+        columns:
+        - "#Properties.id"
+        referencedColumns:
+        - "#Sources.id"

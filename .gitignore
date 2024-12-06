@@ -58,3 +58,6 @@ output/*
 .DS_Store
 *.DS_store
 
+# Specific for this project
+*.sqlite
+*.db

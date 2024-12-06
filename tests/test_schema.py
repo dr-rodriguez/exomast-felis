@@ -38,6 +38,7 @@ def db_object(schema):
 
     # Remove any existing copy of the test database
     if os.path.exists(DB_NAME):
+        print(f"Removing older copy of the database: {DB_NAME}")
         os.remove(DB_NAME)
 
     # Using test file for sqlite; in-memory does not preseve inserts
@@ -83,4 +84,12 @@ def test_inserts(db_object):
     # Actual ingest of data
     with engine.connect() as conn:
         conn.execute(Sources.insert().values(source_data))
+        conn.commit()
+
+
+def test_deletes(db_object):
+    engine, metadata = db_object.engine, db_object.metadata
+    Sources = metadata.tables["Sources"]
+    with engine.connect() as conn:
+        conn.execute(Sources.delete())
         conn.commit()

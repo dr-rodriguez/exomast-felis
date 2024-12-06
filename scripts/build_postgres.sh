@@ -1,7 +1,9 @@
 #!/bin/bash
 
-# Empty database must be created first with CREATE DATABASE and a schema exomast must also be created with CREATE SCHEMA
+# Empty database must be created first with CREATE DATABASE
 
-felis validate exomast/schema.yaml
+felis validate --check-description exomast/schema.yaml
 
-felis create --initialize --engine-url postgresql+psycopg2://postgres:password@localhost:5432/exomast exomast/schema.yaml
+# Use --initialize or --drop to create a brand new database, otherwise it will update the existing one
+felis create --drop --engine-url postgresql+psycopg2://postgres:password@localhost:5432/exomast exomast/schema.yaml
+# felis create --engine-url postgresql+psycopg2://postgres:password@localhost:5432/exomast exomast/schema.yaml

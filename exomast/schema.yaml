@@ -28,6 +28,12 @@ tables:
       length: 30
       description: Originating survey (eg, nexsci, TOI, etc)
       nullable: false
+    - name: name
+      "@id": "#Sources.name"
+      datatype: string
+      length: 100
+      description: Primary name for this source from survey
+      nullable: false
 
     indexes:
       - name: PK_Sources_id

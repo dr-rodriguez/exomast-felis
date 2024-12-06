@@ -76,6 +76,7 @@ def test_inserts(db_object):
             "id": 1,
             "type": "exoplanet",
             "survey": "nexsci",
+            "name": "HAT-P-11 b"
         },
     ]
 

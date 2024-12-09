@@ -23,12 +23,15 @@ REFERENCE_TABLES = [
 ]
 
 # Check if DB/tables exists
-engine = create_engine(CONNECTION_STRING)
+engine = create_engine(CONNECTION_STRING, connect_args={'options': '-csearch_path={}'.format("exomast")})
 with Session(engine) as session:
-    result = session.execute(sa.text("select * from Sources")).fetchall()
+    # session.execute(sa.text("SET search_path TO exomast"))  # set search path to use the schema
+    result = session.execute(sa.text('select * from "Sources"')).fetchall()
 print(result)
 
-db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES)
+db = Database(CONNECTION_STRING, 
+              reference_tables=REFERENCE_TABLES, 
+              connection_arguments={'options': '-csearch_path=exomast'})
 
 # Create object for SQLAlchemy use
 Sources = db.metadata.tables["Sources"]

@@ -28,8 +28,7 @@ RUN chmod -R 777 /var/run/
 # Get the software
 # https://github.com/postgrespro/pgsphere/archive/refs/tags/1.4.2.tar.gz
 RUN wget https://github.com/postgrespro/pgsphere/archive/refs/tags/1.4.2.tar.gz
-RUN tar -xzf pgsphere-1.4.2.tar.gz && rm pgsphere-1.4.2.tar.gz
-# RUN mv /pgsphere-1.4.2 /pgsphere
+RUN tar -xzf 1.4.2.tar.gz 
 WORKDIR /pgsphere-1.4.2
 
 # Install pgsphere

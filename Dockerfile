@@ -29,8 +29,8 @@ RUN chmod -R 777 /var/run/
 # https://github.com/postgrespro/pgsphere/archive/refs/tags/1.4.2.tar.gz
 RUN wget https://github.com/postgrespro/pgsphere/archive/refs/tags/1.4.2.tar.gz
 RUN tar -xzf pgsphere-1.4.2.tar.gz && rm pgsphere-1.4.2.tar.gz
-COPY pgsphere-1.4.2 /pgsphere
-WORKDIR /pgsphere
+# RUN mv /pgsphere-1.4.2 /pgsphere
+WORKDIR /pgsphere-1.4.2
 
 # Install pgsphere
 # Proper installation requires HEALPIX package

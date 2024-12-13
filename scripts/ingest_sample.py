@@ -6,7 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 
-CONNECTION_STRING = "postgresql+psycopg2://postgres:password@localhost:5432/exomast"
+CONNECTION_STRING = "postgresql+psycopg://postgres:password@localhost:5432/exomast"
 # CONNECTION_STRING = "sqlite:///exomast.sqlite"
 REFERENCE_TABLES = [
     "Publications",

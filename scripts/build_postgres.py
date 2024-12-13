@@ -13,7 +13,7 @@
 # from felis.db.utils import DatabaseContext
 from astrodbkit.astrodb import create_database
 
-CONNECTION_STRING = "postgresql+psycopg2://postgres:password@localhost:5432/exomast"
+CONNECTION_STRING = "postgresql+psycopg://postgres:password@localhost:5432/exomast"
 SCHEMA_PATH = "exomast/schema.yaml"
 
 # AstrodbKit version

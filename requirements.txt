@@ -1,4 +1,4 @@
 astrodbkit
 lsst-felis
 pytest
-psycopg2
+psycopg[binary,pool]

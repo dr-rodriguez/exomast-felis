@@ -15,3 +15,6 @@ metadata = MetaDataBuilder(schema).build()
 # Show ER model from here
 filename = "exomast/schema.png"
 render_er(metadata, filename)
+
+# Can also generate markdown (mode=mermaid or mermaid_er)
+render_er(metadata, "exomast/schema.md", mode="mermaid_er")

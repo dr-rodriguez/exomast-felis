@@ -27,8 +27,8 @@ CREATE TABLE exomast."Matches" (
 COMMENT ON TABLE exomast."Matches" IS 'Matching table between exomast sources';
 COMMENT ON COLUMN exomast."Matches".id1 IS 'Source identifier';
 COMMENT ON COLUMN exomast."Matches".id2 IS 'Source identifier';
-COMMENT ON CONSTRAINT "Matches_id2_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
 COMMENT ON CONSTRAINT "Matches_id1_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
+COMMENT ON CONSTRAINT "Matches_id2_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
 
 CREATE TABLE exomast."Names" (
 	id BIGINT NOT NULL, 
@@ -54,25 +54,25 @@ CREATE TABLE exomast."Coords" (
 )
 
 ;
-COMMENT ON TABLE exomast."Coords" IS 'Coordinates for ExoMAST objects (planets, brown dwarfs)';
+COMMENT ON TABLE exomast."Coords" IS 'Coordinates for ExoMAST objects';
 COMMENT ON COLUMN exomast."Coords".id IS 'Main source identifier';
 COMMENT ON COLUMN exomast."Coords".ra IS 'ICRS Right Ascension of object';
 COMMENT ON COLUMN exomast."Coords".dec IS 'ICRS Declination of object';
-COMMENT ON CONSTRAINT "Coords_id_Sources_id" ON exomast."Coords" IS 'Link Coords to Sources table';
 COMMENT ON CONSTRAINT check_dec ON exomast."Coords" IS 'Validate Dec range';
+COMMENT ON CONSTRAINT "Coords_id_Sources_id" ON exomast."Coords" IS 'Link Coords to Sources table';
 COMMENT ON CONSTRAINT check_ra ON exomast."Coords" IS 'Validate RA range';
 
-CREATE TABLE exomast."Properties" (
+CREATE TABLE exomast."PlanetProperties" (
 	id BIGINT, 
 	property VARCHAR(30), 
 	value DOUBLE PRECISION, 
 	PRIMARY KEY (id, property), 
-	CONSTRAINT "Properties_id_Sources_id" FOREIGN KEY(id) REFERENCES exomast."Sources" (id)
+	CONSTRAINT "PlanetProperties_id_Sources_id" FOREIGN KEY(id) REFERENCES exomast."Sources" (id)
 )
 
 ;
-COMMENT ON TABLE exomast."Properties" IS 'Properties for ExoMAST objects (planets, brown dwarfs)';
-COMMENT ON COLUMN exomast."Properties".id IS 'Main source identifier';
-COMMENT ON COLUMN exomast."Properties".property IS 'Name of the property';
-COMMENT ON COLUMN exomast."Properties".value IS 'Value of the property';
-COMMENT ON CONSTRAINT "Properties_id_Sources_id" ON exomast."Properties" IS 'Link Properties to Sources table';
+COMMENT ON TABLE exomast."PlanetProperties" IS 'Properties for ExoMAST planets';
+COMMENT ON COLUMN exomast."PlanetProperties".id IS 'Main source identifier';
+COMMENT ON COLUMN exomast."PlanetProperties".property IS 'Name of the property';
+COMMENT ON COLUMN exomast."PlanetProperties".value IS 'Value of the property';
+COMMENT ON CONSTRAINT "PlanetProperties_id_Sources_id" ON exomast."PlanetProperties" IS 'Link PlanetProperties to Sources table';

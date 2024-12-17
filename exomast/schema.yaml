@@ -159,7 +159,6 @@ tables:
     description: Properties for ExoMAST planets
     primaryKey: 
     - "#PlanetProperties.id"
-    - "#PlanetProperties.property"
 
     columns:
     - name: id

@@ -3,7 +3,7 @@
 import sqlalchemy as sa
 from astrodbkit.astrodb import Database
 from sqlalchemy import create_engine
-from sqlalchemy.ext.automap import automap_base
+# from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 
 CONNECTION_STRING = "postgresql+psycopg://postgres:password@localhost:5432/exomast"
@@ -26,9 +26,9 @@ db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES, schema="exom
 source_data = [
     {
         "id": 1,
-        "type": "exoplanet",
+        "source_type": "exoplanet",
         "survey": "nexsci",
-        "name": "HAT-P-11 b",
+        "primary_name": "HAT-P-11 b",
     },
 ]
 

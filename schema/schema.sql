@@ -3,7 +3,7 @@ CREATE TABLE exomast."Sources" (
 	id BIGSERIAL, 
 	source_type VARCHAR(30) NOT NULL, 
 	survey VARCHAR(30) NOT NULL, 
-	name VARCHAR(100) NOT NULL, 
+	primary_name VARCHAR(100) NOT NULL, 
 	PRIMARY KEY (id)
 )
 
@@ -13,7 +13,7 @@ COMMENT ON TABLE exomast."Sources" IS 'Main table for ExoMAST objects (planets, 
 COMMENT ON COLUMN exomast."Sources".id IS 'Main source identifier';
 COMMENT ON COLUMN exomast."Sources".source_type IS 'Type of source (eg, exoplanet, brown dwarf, etc)';
 COMMENT ON COLUMN exomast."Sources".survey IS 'Originating survey (eg, nexsci, TOI, etc)';
-COMMENT ON COLUMN exomast."Sources".name IS 'Primary name for this source from survey';
+COMMENT ON COLUMN exomast."Sources".primary_name IS 'Primary name for this source from survey';
 
 CREATE TABLE exomast."Publications" (
 	id BIGSERIAL, 
@@ -91,8 +91,8 @@ COMMENT ON COLUMN exomast."PlanetProperties".id IS 'Main source identifier';
 COMMENT ON COLUMN exomast."PlanetProperties".orbital_period IS 'Orbital period in days';
 COMMENT ON COLUMN exomast."PlanetProperties".orbital_period_error IS 'Uncertainty of orbital period in days';
 COMMENT ON COLUMN exomast."PlanetProperties".orbital_period_ref IS 'Publication identifier for orbital period';
-COMMENT ON CONSTRAINT "PlanetProperties_id_Publications_id" ON exomast."PlanetProperties" IS 'Link PlanetProperties to Publications table';
 COMMENT ON CONSTRAINT "PlanetProperties_id_Sources_id" ON exomast."PlanetProperties" IS 'Link PlanetProperties to Sources table';
+COMMENT ON CONSTRAINT "PlanetProperties_id_Publications_id" ON exomast."PlanetProperties" IS 'Link PlanetProperties to Publications table';
 
 CREATE TABLE exomast."Properties" (
 	id BIGINT, 

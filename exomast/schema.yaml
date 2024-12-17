@@ -29,7 +29,7 @@ tables:
       description: Originating survey (eg, nexsci, TOI, etc)
       nullable: false
     - name: name
-      "@id": "#Sources.name"
+      "@id": "#Sources.primary_name"
       datatype: string
       length: 100
       description: Primary name for this source from survey
@@ -167,15 +167,12 @@ tables:
       datatype: long
       description: Main source identifier
       ivoa:ucd: meta.id;meta.main
-    - name: property
-      "@id": "#PlanetProperties.property"
-      datatype: string
-      length: 30
-      description: Name of the property
-    - name: value
-      "@id": "#PlanetProperties.value"
-      datatype: double
-      description: Value of the property
+    - name: orbital_period
+      "@id": "#PlanetProperties.orbital_period"
+      datatype: float
+      description: Orbital period in days
+      fits:tunit: day
+      ivoa:ucd: time.period.revolution
 
     constraints:
       - name: PlanetProperties_id_Sources_id

@@ -1,7 +1,7 @@
 
 CREATE TABLE exomast."Sources" (
 	id BIGSERIAL, 
-	type VARCHAR(30) NOT NULL, 
+	source_type VARCHAR(30) NOT NULL, 
 	survey VARCHAR(30) NOT NULL, 
 	name VARCHAR(100) NOT NULL, 
 	PRIMARY KEY (id)
@@ -11,7 +11,7 @@ CREATE TABLE exomast."Sources" (
 CREATE INDEX "PK_Sources_id" ON exomast."Sources" (id);
 COMMENT ON TABLE exomast."Sources" IS 'Main table for ExoMAST objects (planets, brown dwarfs)';
 COMMENT ON COLUMN exomast."Sources".id IS 'Main source identifier';
-COMMENT ON COLUMN exomast."Sources".type IS 'Type of source (eg, exoplanet, brown dwarf, etc)';
+COMMENT ON COLUMN exomast."Sources".source_type IS 'Type of source (eg, exoplanet, brown dwarf, etc)';
 COMMENT ON COLUMN exomast."Sources".survey IS 'Originating survey (eg, nexsci, TOI, etc)';
 COMMENT ON COLUMN exomast."Sources".name IS 'Primary name for this source from survey';
 
@@ -40,8 +40,8 @@ CREATE TABLE exomast."Matches" (
 COMMENT ON TABLE exomast."Matches" IS 'Matching table between exomast sources';
 COMMENT ON COLUMN exomast."Matches".id1 IS 'Source identifier';
 COMMENT ON COLUMN exomast."Matches".id2 IS 'Source identifier';
-COMMENT ON CONSTRAINT "Matches_id1_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
 COMMENT ON CONSTRAINT "Matches_id2_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
+COMMENT ON CONSTRAINT "Matches_id1_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
 
 CREATE TABLE exomast."Names" (
 	id BIGINT NOT NULL, 
@@ -112,5 +112,5 @@ COMMENT ON COLUMN exomast."Properties".property_type IS 'Property type (eg, the 
 COMMENT ON COLUMN exomast."Properties".property_value IS 'Value of property';
 COMMENT ON COLUMN exomast."Properties".property_error IS 'Uncertainty of value';
 COMMENT ON COLUMN exomast."Properties".property_reference IS 'Publication reference';
-COMMENT ON CONSTRAINT "Properties_id_Publications_id" ON exomast."Properties" IS 'Link Properties to Publications table';
 COMMENT ON CONSTRAINT "Properties_id_Sources_id" ON exomast."Properties" IS 'Link Properties to Sources table';
+COMMENT ON CONSTRAINT "Properties_id_Publications_id" ON exomast."Properties" IS 'Link Properties to Publications table';

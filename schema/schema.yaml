@@ -16,8 +16,8 @@ tables:
       datatype: long
       description: Main source identifier
       ivoa:ucd: meta.id;meta.main
-    - name: type
-      "@id": "#Sources.type"
+    - name: source_type
+      "@id": "#Sources.source_type"
       datatype: string
       length: 30
       description: Type of source (eg, exoplanet, brown dwarf, etc)

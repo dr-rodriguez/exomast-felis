@@ -22,7 +22,7 @@ if DELETE_SCHEMA:
     engine = create_engine(CONNECTION_STRING)
     with engine.connect() as conn:
         conn.execute(DropSchema(SCHEMA_NAME, cascade=True, if_exists=True))
-        conn.execute(DropSchema("'TAP_SCHEMA'", cascade=True, if_exists=True))
+        conn.execute(DropSchema("TAP_SCHEMA", cascade=True, if_exists=True))
         # conn.execute(sa.text(f"DROP SCHEMA '{SCHEMA_NAME}' CASCADE;"))
         conn.commit()
 

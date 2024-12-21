@@ -1,23 +1,33 @@
 # Script for bulk load of old exomast JSON files
 
 import os
+import socket
 import json
 from astrodbkit.astrodb import Database
 from sqlalchemy import func
+from config import CONNECTION_STRING, REFERENCE_TABLES
 
-CONNECTION_STRING = "postgresql+psycopg://postgres:password@localhost:5432/exomast"
-REFERENCE_TABLES = [
-    "Publications",
-    "Surveys",
-]
-JSON_PATH = "/Users/drodriguez/data/CF/exomast-catalog/data/output/exoplanetsOrg"  # path to folder with JSON files
-FILE_LIMIT = 5
+
+# TODO: Remove or have better handling
+FILE_LIMIT = 10
+
+# Determine path of JSON files
+machine_name = socket.gethostname()
+if "maelstrom" in machine_name:
+    ROOT_PATH = "/Users/drodriguez/data/CF/exomast-catalog/data/output/"
+elif "Strakul" in machine_name:
+    ROOT_PATH = "/Users/strakul/PycharmProjects/exomast-catalog/data/output/"
+JSON_PATH = ROOT_PATH + "exoplanetsOrg"  # path to folder with JSON files
+
 
 # TODO: Write helper Class that inherits from astrodbKit.astrodb.Database
 # TODO: Assign incrementing ID by survey?
 
+
 # TODO: Helper function to check existence of references first (move to method later)
-def check_publication(db, bibcode: str = None, reference: str = None, verbose: bool = False):
+def check_publication(
+    db, bibcode: str = None, reference: str = None, verbose: bool = False
+):
     """
     Check Publications table for present of given bibcode/reference
 
@@ -32,9 +42,17 @@ def check_publication(db, bibcode: str = None, reference: str = None, verbose: b
 
     # Rely on bibcode first if provided
     if bibcode is not None and bibcode != "":
-        t = db.query(db.Publications).filter(db.Publications.c.bibcode == bibcode).table()
+        t = (
+            db.query(db.Publications)
+            .filter(db.Publications.c.bibcode == bibcode)
+            .table()
+        )
     elif reference is not None and reference != "":
-        t = db.query(db.Publications).filter(db.Publications.c.reference == reference).table()
+        t = (
+            db.query(db.Publications)
+            .filter(db.Publications.c.reference == reference)
+            .table()
+        )
     else:
         t = []
 
@@ -68,7 +86,7 @@ def fetch_next_id(db, survey=""):
     else:
         max_id = 1
 
-    return max_id
+    return int(max_id)
 
 
 def extract_bibcode(url: str):
@@ -93,6 +111,27 @@ def extract_bibcode(url: str):
         bibcode = temp
 
     return bibcode
+
+
+def extract_from_nested_json(data: dict, parameter: str, subparameter: str):
+    """Helper function to extract information from nexted JSON.
+    Example:
+    "orbital_period": {
+        "value": 265.59,
+        "unit": "d",
+        "uerror": 1.04,
+        "lerror": 1.04,
+        "reference": "Dalal et al. 2021"
+    },
+    """
+
+    temp = data.get(parameter)
+    value = None
+
+    if temp is not None and isinstance(temp, dict):
+        value = temp.get(subparameter)
+
+    return value
 
 
 # Main code
@@ -152,13 +191,24 @@ for file in os.listdir(JSON_PATH):
     names_data = [{"id": id, "name": n} for n in name_list]
 
     # TODO: Properties dict (only a few or all?)
-    # TODO: PlanetProperties dict (just orbital_period)
+    # PlanetProperties dict (just orbital_period for now)
+    planet_prop_data = [
+        {
+            "id": id,
+            "orbital_period": extract_from_nested_json(data, "orbital_period", "value"),
+            "orbital_period_error": extract_from_nested_json(
+                data, "orbital_period", "uerror"
+            ),
+            "orbital_period_ref": None,
+        }
+    ]
 
     # Actual ingest of data
     with db.engine.connect() as conn:
         conn.execute(db.Sources.insert().values(source_data))
         conn.execute(db.Coords.insert().values(coords_data))
         conn.execute(db.Names.insert().values(names_data))
+        conn.execute(db.PlanetProperties.insert().values(planet_prop_data))
         conn.commit()
 
     count += 1

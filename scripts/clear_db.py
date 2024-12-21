@@ -18,9 +18,12 @@ for name in table_names:
         # Truncate Sources and Publications last
         continue
     db.session.execute(sa.text(f'TRUNCATE "{name}" CASCADE;'))
+    db.session.commit()
 
 # Final tables
 db.session.execute(sa.text('Truncate "Sources" CASCADE;'))
+db.session.commit()
 db.session.execute(sa.text('Truncate "Publications" CASCADE;'))
+db.session.commit()
 
 print("All tables cleared")

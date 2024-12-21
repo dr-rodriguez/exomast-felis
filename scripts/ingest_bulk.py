@@ -8,8 +8,9 @@ from sqlalchemy import func
 from config import CONNECTION_STRING, REFERENCE_TABLES
 
 
-# TODO: Remove or have better handling
-FILE_LIMIT = 10
+# How many to process; set to 0 or less to do all
+FILE_LIMIT = 0
+VERBOSE = False
 
 # Determine path of JSON files
 machine_name = socket.gethostname()
@@ -17,7 +18,7 @@ if "maelstrom" in machine_name:
     ROOT_PATH = "/Users/drodriguez/data/CF/exomast-catalog/data/output/"
 elif "Strakul" in machine_name:
     ROOT_PATH = "/Users/strakul/PycharmProjects/exomast-catalog/data/output/"
-JSON_PATH = ROOT_PATH + "exoplanetsOrg"  # path to folder with JSON files
+JSON_PATH = ROOT_PATH + "nexsci"  # path to folder with JSON files
 
 
 # TODO: Write helper Class that inherits from astrodbKit.astrodb.Database
@@ -144,7 +145,7 @@ count = 0
 for file in os.listdir(JSON_PATH):
     if not file.endswith(".json"):
         continue
-    if count >= FILE_LIMIT:
+    if FILE_LIMIT > 0 and count >= FILE_LIMIT:
         break
 
     # Load the JSON data
@@ -152,8 +153,9 @@ for file in os.listdir(JSON_PATH):
     with open(filename, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    print(count)
-    print(data)
+    if VERBOSE:
+        print(count)
+        print(data)
 
     # TODO: check for duplicates?
     # TODO: handle updates?
@@ -212,5 +214,7 @@ for file in os.listdir(JSON_PATH):
         conn.commit()
 
     count += 1
+
+print(f"{count} records added.")
 
 # NO matching of Sources to happen yet

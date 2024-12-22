@@ -13,7 +13,7 @@ If you want to generate ER diagrams you may need to do `conda install -c conda-f
 
 ## Database design
 
-![database erd](exomast/schema.png)
+![database erd](schema/schema.png)
 
 ## Docker instructions for a useful Postgres database
 ```bash

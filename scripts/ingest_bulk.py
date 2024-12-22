@@ -5,7 +5,7 @@ import socket
 import json
 from astrodbkit.astrodb import Database
 from sqlalchemy import func
-from config import CONNECTION_STRING, REFERENCE_TABLES
+from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
 
 
 # How many to process; set to 0 or less to do all
@@ -138,7 +138,7 @@ def extract_from_nested_json(data: dict, parameter: str, subparameter: str):
 # Main code
 
 # Establish DB connection
-db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES, schema="exomast")
+db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES, schema=SCHEMA_NAME)
 
 # Loop over all JSON files
 count = 0

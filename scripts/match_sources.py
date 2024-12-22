@@ -1,11 +1,13 @@
 # Script to identify matching sources
 
 import sqlalchemy as sa
+from itertools import permutations
 from astrodbkit.astrodb import Database
 from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
 
 THRESHOLD = 1.e-5  # period matching threshold
 VERBOSE = False
+DRYRUN = True  # do not do DB inserts
 
 # Helper functions
 def extract_tic(name_list: list):
@@ -104,6 +106,7 @@ period_match_id = match_by_period(db, tic=tic, period=period, verbose=VERBOSE, t
 # Combine match lists and remove any duplicates
 id_list = name_matched_id + period_match_id
 id_list = list(set(id_list))
+id_list.sort()
 
 # Query to check results
 t = db.query(db.Sources.c.id, db.Sources.c.survey, db.Sources.c.primary_name, 
@@ -120,3 +123,19 @@ print(t)
 
 # Store matches in match table
 # ============================
+
+# Check if match is already present, if so: skip
+
+match_data = []
+for i, j in permutations(id_list, 2):  # 2 specifies pairs
+    counts = db.query(db.Matches).filter(sa.and_(db.Matches.c.id1==i, db.Matches.c.id2==j)).count()
+    if counts == 0:
+        pair = {"id1": i, "id2": j}
+        match_data.append(pair)
+
+if len(match_data) > 0 and not DRYRUN:
+    # Actual ingest of data
+    with db.engine.connect() as conn:
+        conn.execute(db.Matches.insert().values(match_data))
+        conn.commit()
+    print("Matched IDs stored in database")

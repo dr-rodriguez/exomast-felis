@@ -184,6 +184,7 @@ db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES, schema=SCHEM
 id = 135  # HAT-P-11 b
 
 # Loop over all sources and run their matches
+# Can update query to resume from some ID or better yet from some modification_date
 t = db.query(db.Sources.c.id).table()
 for id in t["id"].tolist():
     print(id)

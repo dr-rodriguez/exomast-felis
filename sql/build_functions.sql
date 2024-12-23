@@ -23,6 +23,11 @@ BEGIN
         FROM exomast."Matches" AS M
         JOIN exomast."Names" AS N ON M.id1 = N.id
         WHERE N.name = planet_name
+        UNION ALL
+        SELECT M.id1
+        FROM exomast."Matches" AS M
+        JOIN exomast."Names" AS N ON M.id1 = N.id
+        WHERE N.name = planet_name
     )
     ORDER BY s.id;
 END $$ LANGUAGE plpgsql;

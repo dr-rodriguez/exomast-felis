@@ -5,7 +5,7 @@ from itertools import permutations
 from astrodbkit.astrodb import Database
 from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
 
-THRESHOLD = 1.e-5  # period matching threshold
+THRESHOLD = 1.e-3  # period matching threshold
 VERBOSE = False
 DRYRUN = False  # do not do DB inserts
 
@@ -33,7 +33,7 @@ def match_by_name(db: Database, name_list: list, verbose: bool=False):
     return id_list
 
 
-def match_by_period(db: Database, tic: int, period: float, verbose: bool=False, threshold: float=1.e-5):
+def match_by_period(db: Database, tic: int, period: float, verbose: bool=False, threshold: float=1.e-3):
     """Match database sources using period and TIC ID. Returns a list of possible IDs"""
     
     # Break if no period is available for use or no TIC was provided
@@ -107,7 +107,7 @@ def store_matches(db: Database, id_list: list, verbose: bool=False, dryrun: bool
     return
 
 
-def run_match(db: Database, id: int, verbose: bool=False, dryrun: bool=True, threshold: float=1.e-5):
+def run_match(db: Database, id: int, verbose: bool=False, dryrun: bool=True, threshold: float=1.e-3):
     """Wrapper function- will run all steps in the matching script for a given ID"""
 
     id_list = []

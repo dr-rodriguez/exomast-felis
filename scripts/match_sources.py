@@ -46,9 +46,17 @@ def match_by_period(db: Database, tic: int, period: float, verbose: bool=False, 
             .filter(sa.and_(db.Sources.c.survey.in_(["toi", "TESS-DV"]),
                             db.Names.c.name.like(f"TIC {tic} %")))\
             .table()
-    if verbose:
-        print(f"Entries from TOI/TESS-DV that match TIC {tic}")
-        print(t)
+    
+    # Check if any matches
+    if len(t) == 0:
+        if verbose:
+            print(f"No matches for TIC {tic}")
+        return []
+    else:
+        if verbose:
+            print(f"Entries from TOI/TESS-DV that match TIC {tic}")
+            print(t)
+    
     potential_ids = t["id"].tolist()
 
     # Filter down IDs by orbital period matching
@@ -59,10 +67,15 @@ def match_by_period(db: Database, tic: int, period: float, verbose: bool=False, 
             .filter(sa.and_(db.PlanetProperties.c.id.in_(potential_ids),
                             db.PlanetProperties.c.orbital_period - period < threshold))\
             .table()
-    if verbose:
-        print(f"Entries from TOI/TESS-DV that match TIC {tic} and have period close to {period}")
-        print(t)
-    potential_ids = t["id"].tolist()
+    if len(t) == 0:
+        if verbose:
+            print(f"No matches for TIC {tic} and period {period}")
+        return []
+    else:
+        if verbose:
+            print(f"Entries from TOI/TESS-DV that match TIC {tic} and have period close to {period}")
+            print(t)
+        potential_ids = t["id"].tolist()
 
     return potential_ids
 
@@ -99,17 +112,20 @@ def run_match(db: Database, id: int, verbose: bool=False, dryrun: bool=True, thr
 
     id_list = []
 
-
     # Identify matches by name
     # ========================
 
     # Fetch all the names for that ID
     t = db.query(db.Names.c.name).filter(db.Names.c.id==id).table()
     name_list = t["name"].tolist()
-    if VERBOSE:
-        print(f"List of names for id {id}: {name_list}")
 
-    name_matched_id = match_by_name(db, name_list, verbose=verbose)
+    # If this planet has names, use them for matching
+    if len(name_list) > 0:
+        if verbose:
+            print(f"List of names for id {id}: {name_list}")
+        name_matched_id = match_by_name(db, name_list, verbose=verbose)
+    else:
+        name_matched_id = []
 
 
     # Identify matches by TESS ID and orbital_period
@@ -126,6 +142,7 @@ def run_match(db: Database, id: int, verbose: bool=False, dryrun: bool=True, thr
     # Get TIC ID from the name list
     tic = extract_tic(name_list)
 
+    # Will return an empty list if TIC or period are missing
     period_match_id = match_by_period(db, tic=tic, period=period, verbose=verbose, threshold=threshold)
 
 
@@ -165,4 +182,8 @@ db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES, schema=SCHEM
 
 id = 135  # HAT-P-11 b
 
-run_match(db=db, id=id, verbose=VERBOSE, dryrun=DRYRUN, threshold=THRESHOLD)
+# Loop over all sources and run their matches
+t = db.query(db.Sources.c.id).table()
+for id in t["id"].tolist():
+    print(id)
+    run_match(db=db, id=id, verbose=VERBOSE, dryrun=DRYRUN, threshold=THRESHOLD)

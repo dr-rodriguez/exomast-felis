@@ -18,7 +18,12 @@ if "maelstrom" in machine_name:
     ROOT_PATH = "/Users/drodriguez/data/CF/exomast-catalog/data/output/"
 elif "Strakul" in machine_name:
     ROOT_PATH = "/Users/strakul/PycharmProjects/exomast-catalog/data/output/"
-JSON_PATH = ROOT_PATH + "nexsci"  # path to folder with JSON files
+# path to folder with JSON files
+JSON_PATH = ROOT_PATH + "exoplanetsOrg"
+# JSON_PATH = ROOT_PATH + "nexsci"
+# JSON_PATH = ROOT_PATH + "koi"
+# JSON_PATH = ROOT_PATH + "toi"
+# JSON_PATH = ROOT_PATH + "tess_dv"
 
 
 # TODO: Write helper Class that inherits from astrodbKit.astrodb.Database

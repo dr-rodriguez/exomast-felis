@@ -34,6 +34,11 @@ tables:
       length: 100
       description: Primary name for this source from survey
       nullable: false
+    - name: modification_date
+      "@id": "#Sources.modification_date"
+      datatype: timestamp
+      description: Timestamp from when this source was produced
+      nullable: false
 
     indexes:
       - name: PK_Sources_id
@@ -183,6 +188,11 @@ tables:
       datatype: long
       description: Publication identifier for orbital period
       ivoa:ucd: meta.bib;time.period.revolution
+    - name: tess_id
+      "@id": "#PlanetProperties.tess_id"
+      datatype: long
+      description: TESS identifier
+      ivoa:ucd: meta.id
 
 
     constraints:
@@ -200,60 +210,6 @@ tables:
         description: Link PlanetProperties to Publications table
         columns:
         - "#PlanetProperties.orbital_period_ref"
-        referencedColumns:
-        - "#Publications.id"
-
-  - name: Properties
-    "@id": "#Properties"
-    description: Properties for ExoMAST planets; long-form version
-    primaryKey: 
-    - "#Properties.id"
-    - "#Properties.property_type"
-
-    columns:
-    - name: id
-      "@id": "#Properties.id"
-      datatype: long
-      description: Main source identifier
-      ivoa:ucd: meta.id;meta.main
-    - name: property_type
-      "@id": "#Properties.property_type"
-      datatype: string
-      length: 30
-      description: Property type (eg, the name "orbital period")
-      ivoa:ucd: meta.id
-    - name: property_value
-      "@id": "#Properties.property_value"
-      datatype: float
-      description: Value of property
-      ivoa:ucd: stat.value
-    - name: property_error
-      "@id": "#Properties.property_error"
-      datatype: float
-      description: Uncertainty of value
-      fits:tunit: day
-      ivoa:ucd: stat.error;time.period.revolution
-    - name: property_reference
-      "@id": "#Properties.orbital_period_ref"
-      datatype: long
-      description: Publication reference
-      ivoa:ucd: meta.bib
-
-    constraints:
-      - name: Properties_id_Sources_id
-        "@type": "ForeignKey"
-        "@id": "#FK_Properties_id_Source_id"
-        description: Link Properties to Sources table
-        columns:
-        - "#Properties.id"
-        referencedColumns:
-        - "#Sources.id"
-      - name: Properties_id_Publications_id
-        "@type": "ForeignKey"
-        "@id": "#FK_Properties_id_Publications_id"
-        description: Link Properties to Publications table
-        columns:
-        - "#Properties.orbital_period_ref"
         referencedColumns:
         - "#Publications.id"
 

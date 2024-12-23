@@ -1,6 +1,7 @@
 # Script to identify matching sources
 
 import sqlalchemy as sa
+from sqlalchemy import func
 from itertools import permutations
 from astrodbkit.astrodb import Database
 from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
@@ -63,9 +64,9 @@ def match_by_period(db: Database, tic: int, period: float, verbose: bool=False, 
     t = db.query(db.PlanetProperties.c.id, 
                 db.PlanetProperties.c.orbital_period, 
                 db.PlanetProperties.c.orbital_period_error,
-                sa.label("diff", db.PlanetProperties.c.orbital_period - period))\
+                sa.label("diff", func.abs(db.PlanetProperties.c.orbital_period - period)))\
             .filter(sa.and_(db.PlanetProperties.c.id.in_(potential_ids),
-                            db.PlanetProperties.c.orbital_period - period < threshold))\
+                            func.abs(db.PlanetProperties.c.orbital_period - period) < threshold))\
             .table()
     if len(t) == 0:
         if verbose:

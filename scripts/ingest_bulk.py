@@ -162,7 +162,7 @@ for file in os.listdir(JSON_PATH):
         print(count)
         print(data)
 
-    # TODO: check for duplicates?
+    # TODO: check for duplicates? maybe by survey+primary_name+modification_date? (not applicable for TESS-DV?)
     # TODO: handle updates?
 
     # Get the next available Source id
@@ -173,6 +173,8 @@ for file in os.listdir(JSON_PATH):
     # TODO: Publications dict (with check for existence first)
     # Not all references are real papers, may need to have some logic/exclude list
 
+    # TODO: Check if dates need to be converted to datetime objects first
+
     # Sources dict
     source_data = [
         {
@@ -180,6 +182,7 @@ for file in os.listdir(JSON_PATH):
             "source_type": "exoplanet",
             "survey": data.get("catalog_name"),
             "primary_name": data.get("planet_name"),
+            "modification_date": data.get("modification_date"),
         },
     ]
 
@@ -197,7 +200,6 @@ for file in os.listdir(JSON_PATH):
     name_list = list(set(name_list))  # remove any duplicates
     names_data = [{"id": id, "name": n} for n in name_list]
 
-    # TODO: Properties dict (only a few or all?)
     # PlanetProperties dict (just orbital_period for now)
     planet_prop_data = [
         {
@@ -207,6 +209,7 @@ for file in os.listdir(JSON_PATH):
                 data, "orbital_period", "uerror"
             ),
             "orbital_period_ref": None,
+            "tess_id": data.get("tess_id"),
         }
     ]
 
@@ -222,4 +225,4 @@ for file in os.listdir(JSON_PATH):
 
 print(f"{count} records added.")
 
-# NO matching of Sources to happen yet
+# No matching of Sources to happen yet- see match_sources.py

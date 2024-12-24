@@ -1,14 +1,13 @@
 # Script for bulk load of old exomast JSON files
 
+import json
 import os
 import socket
-import json
-import sqlalchemy as sa
 from datetime import datetime
-from astrodbkit.astrodb import Database
-from sqlalchemy import func
-from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
 
+from astrodbkit.astrodb import Database
+from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
+from sqlalchemy import func, and_
 
 # How many to process; set to 0 or less to do all
 FILE_LIMIT = 0
@@ -127,10 +126,12 @@ def extract_bibcode(url: str):
     # Extract bib code from ADS url
     if url is not None and url != "":
         # Strip out any /abstract parts
-        temp = url.replace("/abstract","").split("/")[-1]
+        temp = url.replace("/abstract", "").split("/")[-1]
 
     # Handle HTML cases
-    if temp is not None and (temp.endswith(".html") or temp.endswith(".php") or temp == ""):
+    if temp is not None and (
+        temp.endswith(".html") or temp.endswith(".php") or temp == ""
+    ):
         bibcode = None
     else:
         bibcode = temp
@@ -160,30 +161,30 @@ def extract_from_nested_json(data: dict, parameter: str, subparameter: str):
 
 
 def extract_all_urls(data):
-  """
-  This function recursively traverses the JSON data structure and extracts all keys named "url".
-  AI-generated via Gemini 2.0 Flash
+    """
+    This function recursively traverses the JSON data structure and extracts all keys named "url".
+    AI-generated via Gemini 2.0 Flash
 
-  Args:
-      data: The JSON data structure (dictionary or list).
+    Args:
+        data: The JSON data structure (dictionary or list).
 
-  Returns:
-      A list of all "url" key values found in the data.
-  """
+    Returns:
+        A list of all "url" key values found in the data.
+    """
 
-  urls = []
-  if isinstance(data, dict):
-    for key, value in data.items():
-      if key == "url":
-        urls.append(value)
-      else:
-        # Recursively call the function for nested dictionaries and lists
-        urls.extend(extract_all_urls(value))
-  elif isinstance(data, list):
-    for item in data:
-      urls.extend(extract_all_urls(item))
+    urls = []
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if key == "url":
+                urls.append(value)
+            else:
+                # Recursively call the function for nested dictionaries and lists
+                urls.extend(extract_all_urls(value))
+    elif isinstance(data, list):
+        for item in data:
+            urls.extend(extract_all_urls(item))
 
-  return urls
+    return urls
 
 
 def process_publications(db: Database, data: dict):
@@ -204,16 +205,22 @@ def process_publications(db: Database, data: dict):
 
         if bibcode is None:
             # Attempt to use reference information from URL
-            reference = url.replace(".html","").split("/")[-1]
-            # print(f"No bibcode for {url}. Using reference={reference}")
+            reference = url.replace(".html", "").split("/")[-1]
+            if reference == "":
+                reference = None
         # TODO: May need some better handling since some values are in reference and not url
-        
+        # Also, some cases are empty string and being handled improperly
+        # Long-term this may be a moot point- the references may be handled directly from the
+        # source material as opposed to extracing from the limited JSON information.
+
         # Check if in DB already
         t = check_publication(db=db, bibcode=bibcode, reference=reference)
         if len(t) == 0:
             pub_id = fetch_next_publication_id(db=db)
             # Add to database
-            publication_data = [{"id": pub_id, "bibcode": bibcode, "reference": reference}]
+            publication_data = [
+                {"id": pub_id, "bibcode": bibcode, "reference": reference}
+            ]
             with db.engine.connect() as conn:
                 conn.execute(db.Publications.insert().values(publication_data))
                 conn.commit()
@@ -251,11 +258,17 @@ for file in os.listdir(JSON_PATH):
     survey = data.get("catalog_name")
     primary_name = data.get("planet_name")
     modification_date = datetime.fromisoformat(data.get("modification_date"))
-    t = db.query(db.Sources)\
-        .filter(sa.and_(db.Sources.c.survey==survey,
-                        db.Sources.c.primary_name==primary_name,
-                        db.Sources.c.modification_date==modification_date))\
+    t = (
+        db.query(db.Sources)
+        .filter(
+            and_(
+                db.Sources.c.survey == survey,
+                db.Sources.c.primary_name == primary_name,
+                db.Sources.c.modification_date == modification_date,
+            )
+        )
         .table()
+    )
     # If Source already present, skip further processing
     if len(t) > 0:
         continue
@@ -306,7 +319,9 @@ for file in os.listdir(JSON_PATH):
             "orbital_period_error": extract_from_nested_json(
                 data, "orbital_period", "uerror"
             ),
-            "orbital_period_ref": url_map.get(extract_from_nested_json(data, "orbital_period", "url")),
+            "orbital_period_ref": url_map.get(
+                extract_from_nested_json(data, "orbital_period", "url")
+            ),
             "tess_id": data.get("tess_id"),
         }
     ]

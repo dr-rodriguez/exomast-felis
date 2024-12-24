@@ -16,9 +16,9 @@ LIMIT 1000;
 select survey, primary_name, COUNT(*) from exomast."Sources" GROUP BY survey, primary_name HAVING count(*) > 1
 
 -- Single planet search
-select * from exomast."Names" as N where N.name in ('Kepler-1498 b');
+select * from exomast."Names" where name in ('Kepler-1498 b');
 select * from exomast."Sources" where id in (
-    select id from exomast."Names" as N where N.name in ('Kepler-1498 b')
+    select id from exomast."Names" where name in ('Kepler-1498 b')
 );
 
 -- Exploring matched planets
@@ -32,3 +32,11 @@ limit 10;
 -- Function use
 select * from exomast.get_planet_info('HAT-P-11 b');
 select * from exomast.get_planet_info('WASP-100 b');
+
+-- Exploring publications
+select * from exomast."Publications" where bibcode is not null;
+select * from exomast."Publications" where reference = '' or bibcode = '';
+select bibcode, count(*) as counts 
+from exomast."Publications" 
+where bibcode is not null
+group by bibcode having count(*) > 1;

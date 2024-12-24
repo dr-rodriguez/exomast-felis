@@ -1,10 +1,12 @@
 # Script to identify matching sources
 
-import sqlalchemy as sa
-from sqlalchemy import func
+from datetime import datetime
 from itertools import permutations
+
+import sqlalchemy as sa
 from astrodbkit.astrodb import Database
 from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
+from sqlalchemy import func
 
 THRESHOLD = 1.e-3  # period matching threshold
 VERBOSE = False
@@ -183,9 +185,18 @@ db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES, schema=SCHEM
 
 id = 135  # HAT-P-11 b
 
+start_time = datetime.now()
+
 # Loop over all sources and run their matches
 # Can update query to resume from some ID or better yet from some modification_date
 t = db.query(db.Sources.c.id).table()
 for id in t["id"].tolist():
     print(id)
     run_match(db=db, id=id, verbose=VERBOSE, dryrun=DRYRUN, threshold=THRESHOLD)
+
+# Calculate elapsed time
+end_time = datetime.now()
+elapsed_time = end_time - start_time
+elapsed_minutes = elapsed_time.total_seconds() / 60.
+
+print(f"Run time: {start_time} - {end_time}. Total minutes: {elapsed_minutes}")

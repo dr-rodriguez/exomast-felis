@@ -237,6 +237,8 @@ def process_publications(db: Database, data: dict):
 # Establish DB connection
 db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES, schema=SCHEMA_NAME)
 
+start_time = datetime.now()
+
 # Loop over all JSON files
 count = 0
 for file in os.listdir(JSON_PATH):
@@ -339,5 +341,12 @@ for file in os.listdir(JSON_PATH):
 
 if not DRYRUN:
     print(f"{count} records added.")
+
+# Calculate elapsed time
+end_time = datetime.now()
+elapsed_time = end_time - start_time
+elapsed_minutes = elapsed_time.total_seconds() / 60.
+
+print(f"Run time: {start_time} - {end_time}. Total minutes: {elapsed_minutes}")
 
 # No matching of Sources to happen yet- see match_sources.py

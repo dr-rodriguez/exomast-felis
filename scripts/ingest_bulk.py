@@ -3,6 +3,8 @@
 import os
 import socket
 import json
+import sqlalchemy as sa
+from datetime import datetime
 from astrodbkit.astrodb import Database
 from sqlalchemy import func
 from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
@@ -11,6 +13,7 @@ from config import CONNECTION_STRING, REFERENCE_TABLES, SCHEMA_NAME
 # How many to process; set to 0 or less to do all
 FILE_LIMIT = 0
 VERBOSE = False
+DRYRUN = False  # control whether to ingest or not
 
 # Determine path of JSON files
 machine_name = socket.gethostname()
@@ -19,8 +22,8 @@ if "maelstrom" in machine_name:
 elif "Strakul" in machine_name:
     ROOT_PATH = "/Users/strakul/PycharmProjects/exomast-catalog/data/output/"
 # path to folder with JSON files
-JSON_PATH = ROOT_PATH + "exoplanetsOrg"
-# JSON_PATH = ROOT_PATH + "nexsci"
+# JSON_PATH = ROOT_PATH + "exoplanetsOrg"
+JSON_PATH = ROOT_PATH + "nexsci"
 # JSON_PATH = ROOT_PATH + "koi"
 # JSON_PATH = ROOT_PATH + "toi"
 # JSON_PATH = ROOT_PATH + "tess_dv"
@@ -30,12 +33,12 @@ JSON_PATH = ROOT_PATH + "exoplanetsOrg"
 # TODO: Assign incrementing ID by survey?
 
 
-# TODO: Helper function to check existence of references first (move to method later)
 def check_publication(
     db, bibcode: str = None, reference: str = None, verbose: bool = False
 ):
     """
-    Check Publications table for present of given bibcode/reference
+    Check Publications table for present of given bibcode/reference.
+    Return publication information if present.
 
     Parameters
     ----------
@@ -43,8 +46,6 @@ def check_publication(
     reference
     verbose
     """
-
-    present_in_db = False
 
     # Rely on bibcode first if provided
     if bibcode is not None and bibcode != "":
@@ -64,7 +65,6 @@ def check_publication(
 
     # Potential match(es) found
     if len(t) == 1:
-        present_in_db = True
         if verbose:
             print(f"Single match for {bibcode}/{reference}.")
             print(t)
@@ -75,16 +75,33 @@ def check_publication(
             print(t)
         raise RuntimeError(msg)
 
-    return present_in_db
+    return t
 
 
-def fetch_next_id(db, survey=""):
+def fetch_next_source_id(db, survey=""):
     """
     Helper function to fetch the next available Source value for a given survey
     """
 
     # Get the largest ID
     t = db.query(func.max(db.Sources.c.id).label("max_id")).table()
+    max_id = t["max_id"][0]
+
+    if max_id is not None:
+        max_id += 1
+    else:
+        max_id = 1
+
+    return int(max_id)
+
+
+def fetch_next_publication_id(db):
+    """
+    Helper function to fetch the next available Publication ID
+    """
+
+    # Get the largest ID
+    t = db.query(func.max(db.Publications.c.id).label("max_id")).table()
     max_id = t["max_id"][0]
 
     if max_id is not None:
@@ -107,11 +124,13 @@ def extract_bibcode(url: str):
     bibcode = None
     temp = None
 
+    # Extract bib code from ADS url
     if url is not None and url != "":
-        temp = url.split("/")[-1]
+        # Strip out any /abstract parts
+        temp = url.replace("/abstract","").split("/")[-1]
 
-    # Handle URL cases
-    if temp is not None and temp.endswith(".html"):
+    # Handle HTML cases
+    if temp is not None and (temp.endswith(".html") or temp.endswith(".php") or temp == ""):
         bibcode = None
     else:
         bibcode = temp
@@ -140,6 +159,72 @@ def extract_from_nested_json(data: dict, parameter: str, subparameter: str):
     return value
 
 
+def extract_all_urls(data):
+  """
+  This function recursively traverses the JSON data structure and extracts all keys named "url".
+  AI-generated via Gemini 2.0 Flash
+
+  Args:
+      data: The JSON data structure (dictionary or list).
+
+  Returns:
+      A list of all "url" key values found in the data.
+  """
+
+  urls = []
+  if isinstance(data, dict):
+    for key, value in data.items():
+      if key == "url":
+        urls.append(value)
+      else:
+        # Recursively call the function for nested dictionaries and lists
+        urls.extend(extract_all_urls(value))
+  elif isinstance(data, list):
+    for item in data:
+      urls.extend(extract_all_urls(item))
+
+  return urls
+
+
+def process_publications(db: Database, data: dict):
+    """Logic to process all publications in a JSON file and return a mapping dictionary"""
+
+    # Get all URLs in the JSON information
+    all_urls = extract_all_urls(data)
+    all_urls = list(set(all_urls))
+    url_map = {}
+
+    # Loop over each, extracting bibcode when possible
+    for url in all_urls:
+        if url is None:
+            continue
+
+        bibcode = extract_bibcode(url)
+        reference = None
+
+        if bibcode is None:
+            # Attempt to use reference information from URL
+            reference = url.replace(".html","").split("/")[-1]
+            # print(f"No bibcode for {url}. Using reference={reference}")
+        # TODO: May need some better handling since some values are in reference and not url
+        
+        # Check if in DB already
+        t = check_publication(db=db, bibcode=bibcode, reference=reference)
+        if len(t) == 0:
+            pub_id = fetch_next_publication_id(db=db)
+            # Add to database
+            publication_data = [{"id": pub_id, "bibcode": bibcode, "reference": reference}]
+            with db.engine.connect() as conn:
+                conn.execute(db.Publications.insert().values(publication_data))
+                conn.commit()
+        else:
+            pub_id = int(t["id"][0])
+        url_map[url] = pub_id
+
+    return url_map
+
+
+# =====================================================================================
 # Main code
 
 # Establish DB connection
@@ -162,27 +247,40 @@ for file in os.listdir(JSON_PATH):
         print(count)
         print(data)
 
-    # TODO: check for duplicates? maybe by survey+primary_name+modification_date? (not applicable for TESS-DV?)
+    # Check for duplicates by survey+primary_name+modification_date?
+    survey = data.get("catalog_name")
+    primary_name = data.get("planet_name")
+    modification_date = datetime.fromisoformat(data.get("modification_date"))
+    t = db.query(db.Sources)\
+        .filter(sa.and_(db.Sources.c.survey==survey,
+                        db.Sources.c.primary_name==primary_name,
+                        db.Sources.c.modification_date==modification_date))\
+        .table()
+    # If Source already present, skip further processing
+    if len(t) > 0:
+        continue
     # TODO: handle updates?
 
     # Get the next available Source id
-    id = fetch_next_id(db, survey="")
+    id = fetch_next_source_id(db, survey="")
 
     # Convert JSON data into dictionaries for insert
+    # ----------------------------------------------
 
-    # TODO: Publications dict (with check for existence first)
+    # Handle publication information
     # Not all references are real papers, may need to have some logic/exclude list
-
-    # TODO: Check if dates need to be converted to datetime objects first
+    url_map = process_publications(db=db, data=data)
+    if VERBOSE:
+        print(url_map)
 
     # Sources dict
     source_data = [
         {
             "id": id,
             "source_type": "exoplanet",
-            "survey": data.get("catalog_name"),
-            "primary_name": data.get("planet_name"),
-            "modification_date": data.get("modification_date"),
+            "survey": survey,
+            "primary_name": primary_name,
+            "modification_date": modification_date,
         },
     ]
 
@@ -208,21 +306,23 @@ for file in os.listdir(JSON_PATH):
             "orbital_period_error": extract_from_nested_json(
                 data, "orbital_period", "uerror"
             ),
-            "orbital_period_ref": None,
+            "orbital_period_ref": url_map.get(extract_from_nested_json(data, "orbital_period", "url")),
             "tess_id": data.get("tess_id"),
         }
     ]
 
     # Actual ingest of data
-    with db.engine.connect() as conn:
-        conn.execute(db.Sources.insert().values(source_data))
-        conn.execute(db.Coords.insert().values(coords_data))
-        conn.execute(db.Names.insert().values(names_data))
-        conn.execute(db.PlanetProperties.insert().values(planet_prop_data))
-        conn.commit()
+    if not DRYRUN:
+        with db.engine.connect() as conn:
+            conn.execute(db.Sources.insert().values(source_data))
+            conn.execute(db.Coords.insert().values(coords_data))
+            conn.execute(db.Names.insert().values(names_data))
+            conn.execute(db.PlanetProperties.insert().values(planet_prop_data))
+            conn.commit()
 
     count += 1
 
-print(f"{count} records added.")
+if not DRYRUN:
+    print(f"{count} records added.")
 
 # No matching of Sources to happen yet- see match_sources.py

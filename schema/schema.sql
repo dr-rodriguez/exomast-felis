@@ -4,6 +4,7 @@ CREATE TABLE exomast."Sources" (
 	source_type VARCHAR(30) NOT NULL, 
 	survey VARCHAR(30) NOT NULL, 
 	primary_name VARCHAR(100) NOT NULL, 
+	modification_date TIMESTAMP WITHOUT TIME ZONE NOT NULL, 
 	PRIMARY KEY (id)
 )
 
@@ -14,11 +15,12 @@ COMMENT ON COLUMN exomast."Sources".id IS 'Main source identifier';
 COMMENT ON COLUMN exomast."Sources".source_type IS 'Type of source (eg, exoplanet, brown dwarf, etc)';
 COMMENT ON COLUMN exomast."Sources".survey IS 'Originating survey (eg, nexsci, TOI, etc)';
 COMMENT ON COLUMN exomast."Sources".primary_name IS 'Primary name for this source from survey';
+COMMENT ON COLUMN exomast."Sources".modification_date IS 'Timestamp from when this source was produced';
 
 CREATE TABLE exomast."Publications" (
 	id BIGSERIAL, 
-	reference VARCHAR(100) NOT NULL, 
-	ref VARCHAR(30), 
+	reference VARCHAR(100), 
+	bibcode VARCHAR(30), 
 	PRIMARY KEY (id)
 )
 
@@ -26,7 +28,7 @@ CREATE TABLE exomast."Publications" (
 COMMENT ON TABLE exomast."Publications" IS 'Publications/references for values in database';
 COMMENT ON COLUMN exomast."Publications".id IS 'Publication internal identifier';
 COMMENT ON COLUMN exomast."Publications".reference IS 'Publication reference name (eg, Author, et al. 2021)';
-COMMENT ON COLUMN exomast."Publications".ref IS 'Publication bibcode';
+COMMENT ON COLUMN exomast."Publications".bibcode IS 'Publication bibcode';
 
 CREATE TABLE exomast."Matches" (
 	id1 BIGINT, 
@@ -40,8 +42,8 @@ CREATE TABLE exomast."Matches" (
 COMMENT ON TABLE exomast."Matches" IS 'Matching table between exomast sources';
 COMMENT ON COLUMN exomast."Matches".id1 IS 'Source identifier';
 COMMENT ON COLUMN exomast."Matches".id2 IS 'Source identifier';
-COMMENT ON CONSTRAINT "Matches_id2_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
 COMMENT ON CONSTRAINT "Matches_id1_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
+COMMENT ON CONSTRAINT "Matches_id2_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
 
 CREATE TABLE exomast."Names" (
 	id BIGINT NOT NULL, 
@@ -80,6 +82,7 @@ CREATE TABLE exomast."PlanetProperties" (
 	orbital_period FLOAT, 
 	orbital_period_error FLOAT, 
 	orbital_period_ref BIGINT, 
+	tess_id BIGINT, 
 	PRIMARY KEY (id), 
 	CONSTRAINT "PlanetProperties_id_Sources_id" FOREIGN KEY(id) REFERENCES exomast."Sources" (id), 
 	CONSTRAINT "PlanetProperties_id_Publications_id" FOREIGN KEY(orbital_period_ref) REFERENCES exomast."Publications" (id)
@@ -91,26 +94,6 @@ COMMENT ON COLUMN exomast."PlanetProperties".id IS 'Main source identifier';
 COMMENT ON COLUMN exomast."PlanetProperties".orbital_period IS 'Orbital period in days';
 COMMENT ON COLUMN exomast."PlanetProperties".orbital_period_error IS 'Uncertainty of orbital period in days';
 COMMENT ON COLUMN exomast."PlanetProperties".orbital_period_ref IS 'Publication identifier for orbital period';
+COMMENT ON COLUMN exomast."PlanetProperties".tess_id IS 'TESS identifier';
 COMMENT ON CONSTRAINT "PlanetProperties_id_Sources_id" ON exomast."PlanetProperties" IS 'Link PlanetProperties to Sources table';
 COMMENT ON CONSTRAINT "PlanetProperties_id_Publications_id" ON exomast."PlanetProperties" IS 'Link PlanetProperties to Publications table';
-
-CREATE TABLE exomast."Properties" (
-	id BIGINT, 
-	property_type VARCHAR(30), 
-	property_value FLOAT, 
-	property_error FLOAT, 
-	property_reference BIGINT, 
-	PRIMARY KEY (id, property_type), 
-	CONSTRAINT "Properties_id_Sources_id" FOREIGN KEY(id) REFERENCES exomast."Sources" (id), 
-	CONSTRAINT "Properties_id_Publications_id" FOREIGN KEY(property_reference) REFERENCES exomast."Publications" (id)
-)
-
-;
-COMMENT ON TABLE exomast."Properties" IS 'Properties for ExoMAST planets; long-form version';
-COMMENT ON COLUMN exomast."Properties".id IS 'Main source identifier';
-COMMENT ON COLUMN exomast."Properties".property_type IS 'Property type (eg, the name "orbital period")';
-COMMENT ON COLUMN exomast."Properties".property_value IS 'Value of property';
-COMMENT ON COLUMN exomast."Properties".property_error IS 'Uncertainty of value';
-COMMENT ON COLUMN exomast."Properties".property_reference IS 'Publication reference';
-COMMENT ON CONSTRAINT "Properties_id_Sources_id" ON exomast."Properties" IS 'Link Properties to Sources table';
-COMMENT ON CONSTRAINT "Properties_id_Publications_id" ON exomast."Properties" IS 'Link Properties to Publications table';

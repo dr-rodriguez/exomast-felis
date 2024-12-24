@@ -231,8 +231,7 @@ tables:
       length: 100
       description: Publication reference name (eg, Author, et al. 2021)
       ivoa:ucd: meta.bib
-      nullable: false
-    - name: ref
+    - name: bibcode
       "@id": "#Publications.bibcode"
       datatype: string
       length: 30

@@ -257,6 +257,7 @@ for file in os.listdir(JSON_PATH):
         print(data)
 
     # Check for duplicates by survey+primary_name+modification_date?
+    # TODO: Revisit if we need to include modification_date once we have the real ingest pipeline
     survey = data.get("catalog_name")
     primary_name = data.get("planet_name")
     modification_date = datetime.fromisoformat(data.get("modification_date"))

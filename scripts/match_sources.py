@@ -20,7 +20,7 @@ def extract_tic(name_list: list):
     for name in name_list:
         if name.startswith("TIC"):
             tic = name.split()[1]  # split by spaces and get the TIC ID
-            return tic
+            return int(tic)
 
     return None
 
@@ -55,14 +55,20 @@ def match_by_period(
     if period is None or tic is None:
         return []
 
-    # Fetch all IDs from toi/tess-dv that match the tic id
+    # Fetch all IDs that match the tic id
+    # Initial version only checked toi/TESS-DV but that may be too restrictive if we want to only run on new TESS-DV objects (ie, they won't match existing nexsci/koi/etc)
     t = (
-        db.query(db.Sources.c.id, db.Names.c.name, db.Sources.c.survey)
+        db.query(db.Sources.c.id, 
+                 db.Names.c.name, 
+                 db.PlanetProperties.c.tess_id, 
+                 db.Sources.c.survey)
         .join(db.Names, db.Sources.c.id == db.Names.c.id)
+        .join(db.PlanetProperties, db.Sources.c.id == db.PlanetProperties.c.id)
         .filter(
             sa.and_(
-                db.Sources.c.survey.in_(["toi", "TESS-DV"]),
-                db.Names.c.name.like(f"TIC {tic} %"),
+                # db.Sources.c.survey.in_(["toi", "TESS-DV"]),
+                db.PlanetProperties.c.tess_id.isnot(None),
+                db.PlanetProperties.c.tess_id == tic,
             )
         )
         .table()
@@ -181,15 +187,18 @@ def run_match(
             db.PlanetProperties.c.id,
             db.PlanetProperties.c.orbital_period,
             db.PlanetProperties.c.orbital_period_error,
+            db.PlanetProperties.c.tess_id,
         )
         .filter(db.PlanetProperties.c.id == id)
         .table()
     )
     period = t["orbital_period"][0]
     # period_error = t["orbital_period_error"][0]
+    tic = t["tess_id"][0]
 
-    # Get TIC ID from the name list
-    tic = extract_tic(name_list)
+    # Get TIC ID from the name list if not already stored
+    if tic is None:
+        tic = extract_tic(name_list)
 
     # Will return an empty list if TIC or period are missing
     period_match_id = match_by_period(
@@ -238,13 +247,13 @@ def run_match(
 # Actual script
 db = Database(CONNECTION_STRING, reference_tables=REFERENCE_TABLES, schema=SCHEMA_NAME)
 
-id = 135  # HAT-P-11 b
-
 start_time = datetime.now()
 
 # Loop over all sources and run their matches
 # Can update query to resume from some ID or better yet from some modification_date
 t = db.query(db.Sources.c.id).table()
+# t = db.query(db.Sources.c.id).filter(db.Sources.c.id >= 38027).table()
+# t = db.query(db.Sources.c.id).filter(db.Sources.c.survey == "exoplanets.org").table()
 for id in t["id"].tolist():
     print(id)
     run_match(db=db, id=id, verbose=VERBOSE, dryrun=DRYRUN, threshold=THRESHOLD)

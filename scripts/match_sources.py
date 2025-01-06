@@ -55,38 +55,7 @@ def match_by_period(
     if period is None or tic is None:
         return []
 
-    # Fetch all IDs that match the tic id
-    # Initial version only checked toi/TESS-DV but that may be too restrictive if we want to only run on new TESS-DV objects (ie, they won't match existing nexsci/koi/etc)
-    t = (
-        db.query(db.Sources.c.id, 
-                 db.Names.c.name, 
-                 db.PlanetProperties.c.tess_id, 
-                 db.Sources.c.survey)
-        .join(db.Names, db.Sources.c.id == db.Names.c.id)
-        .join(db.PlanetProperties, db.Sources.c.id == db.PlanetProperties.c.id)
-        .filter(
-            sa.and_(
-                # db.Sources.c.survey.in_(["toi", "TESS-DV"]),
-                db.PlanetProperties.c.tess_id.isnot(None),
-                db.PlanetProperties.c.tess_id == tic,
-            )
-        )
-        .table()
-    )
-
-    # Check if any matches
-    if len(t) == 0:
-        if verbose:
-            print(f"No matches for TIC {tic}")
-        return []
-    else:
-        if verbose:
-            print(f"Entries from TOI/TESS-DV that match TIC {tic}")
-            print(t)
-
-    potential_ids = t["id"].tolist()
-
-    # Filter down IDs by orbital period matching
+    # Fetch all IDs that match the TIC id and are within the threshold for the orbital period
     t = (
         db.query(
             db.PlanetProperties.c.id,
@@ -96,12 +65,14 @@ def match_by_period(
         )
         .filter(
             sa.and_(
-                db.PlanetProperties.c.id.in_(potential_ids),
+                db.PlanetProperties.c.tess_id.isnot(None),
+                db.PlanetProperties.c.tess_id == tic,
                 func.abs(db.PlanetProperties.c.orbital_period - period) < threshold,
             )
         )
         .table()
     )
+
     if len(t) == 0:
         if verbose:
             print(f"No matches for TIC {tic} and period {period}")
@@ -252,7 +223,7 @@ start_time = datetime.now()
 # Loop over all sources and run their matches
 # Can update query to resume from some ID or better yet from some modification_date
 t = db.query(db.Sources.c.id).table()
-# t = db.query(db.Sources.c.id).filter(db.Sources.c.id >= 38027).table()
+# t = db.query(db.Sources.c.id).filter(db.Sources.c.id >= 52678).table()
 # t = db.query(db.Sources.c.id).filter(db.Sources.c.survey == "exoplanets.org").table()
 for id in t["id"].tolist():
     print(id)

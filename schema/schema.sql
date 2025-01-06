@@ -42,8 +42,8 @@ CREATE TABLE exomast."Matches" (
 COMMENT ON TABLE exomast."Matches" IS 'Matching table between exomast sources';
 COMMENT ON COLUMN exomast."Matches".id1 IS 'Source identifier';
 COMMENT ON COLUMN exomast."Matches".id2 IS 'Source identifier';
-COMMENT ON CONSTRAINT "Matches_id1_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
 COMMENT ON CONSTRAINT "Matches_id2_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
+COMMENT ON CONSTRAINT "Matches_id1_Sources_id" ON exomast."Matches" IS 'Link Matches to Sources table';
 
 CREATE TABLE exomast."Names" (
 	id BIGINT NOT NULL, 
@@ -74,8 +74,8 @@ COMMENT ON COLUMN exomast."Coords".id IS 'Main source identifier';
 COMMENT ON COLUMN exomast."Coords".ra IS 'ICRS Right Ascension of object';
 COMMENT ON COLUMN exomast."Coords".dec IS 'ICRS Declination of object';
 COMMENT ON CONSTRAINT "Coords_id_Sources_id" ON exomast."Coords" IS 'Link Coords to Sources table';
-COMMENT ON CONSTRAINT check_ra ON exomast."Coords" IS 'Validate RA range';
 COMMENT ON CONSTRAINT check_dec ON exomast."Coords" IS 'Validate Dec range';
+COMMENT ON CONSTRAINT check_ra ON exomast."Coords" IS 'Validate RA range';
 
 CREATE TABLE exomast."PlanetProperties" (
 	id BIGINT, 
